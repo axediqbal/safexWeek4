@@ -1,0 +1,16 @@
+{
+  "project_name": "DevPulse Public API Product",
+  "version": "1.0.0",
+  "workflow": {
+    "auto_advance": false,
+    "require_tests": true,
+    "evidence_driven": true
+  },
+  "metadata": {
+    "organization": "DevPulse Solutions (Independent Software House)",
+    "track": "Web Development Specialist Advanced Build",
+    "week": 4,
+    "member_role": "Member 6 — Individual Contributor",
+    "primary_tool": "OpenAPI + Express"
+  }
+}

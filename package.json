@@ -1,0 +1,27 @@
+{
+  "name": "devpulse-public-api",
+  "version": "2.0.0",
+  "description": "Commercial Public API Product for Software Engineering Intelligence — Week 4 Specialist Advanced Build",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "validate:spec": "node scripts/validate-spec.js",
+    "test:client": "node scripts/client.js",
+    "test:ratelimit": "node scripts/load-test.js",
+    "test:benchmark": "node scripts/benchmark-comparison.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "swagger-ui-express": "^5.0.1",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Member 6 (Individual Contributor)",
+  "license": "ISC"
+}

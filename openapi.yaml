@@ -1,0 +1,678 @@
+openapi: 3.0.3
+info:
+  title: DevPulse Code Intelligence API
+  description: |
+    # Commercial Public API Product for Software Engineering Intelligence
+    **DevPulse Labs** (Independent Software House) exposes automated static code analysis, security auditing, technical debt estimation, and CI/CD build metrics as a commercial data service.
+
+    ## Subscription Tiers & Fair-Use Quotas
+    Access is provisioned across three tiered API key plans:
+    - **Free Tier:** 5 requests per 60-second window. Rate limit header reset: 60s. Default demo key: `devpulse_free_demo_key`.
+    - **Developer Tier:** 20 requests per 60-second window. Default demo key: `devpulse_pro_demo_key`.
+    - **Enterprise Tier:** 100 requests per 60-second window. Default demo key: `devpulse_ent_demo_key`.
+
+    ## Rate Limiting & 429 Throttling
+    Every response delivers rate tracking headers:
+    - `X-RateLimit-Limit`: Maximum requests permitted in the window.
+    - `X-RateLimit-Remaining`: Remaining request quota.
+    - `X-RateLimit-Reset`: Seconds remaining until quota replenishes.
+    
+    When limits are exceeded, the API returns **HTTP 429 Too Many Requests** along with a mandatory `Retry-After` header.
+
+    ## API Lifecycle & Versioning
+    - `/api/v1` is currently **deprecated**. Responses include `Deprecation: true`, `Sunset`, and successor `Link` headers.
+    - `/api/v2` represents the modernized production contract featuring normalized data envelopes and ISO-8601 timestamps.
+  version: 2.0.0
+  contact:
+    name: DevPulse Developer Platform
+    email: api-support@devpulse.local
+    url: https://github.com/devpulse/public-api
+  license:
+    name: Commercial / Proprietary
+    url: https://devpulse.local/terms
+
+servers:
+  - url: http://localhost:3000/api/v2
+    description: Production v2 (Current Recommended)
+  - url: http://localhost:3000/api/v1
+    description: Legacy v1 (Deprecated — migration required)
+
+security:
+  - ApiKeyAuth: []
+  - ApiKeyQuery: []
+
+paths:
+  /metrics/code-health:
+    get:
+      tags:
+        - Code Quality & Health
+      summary: Retrieve static code health and maintainability metrics
+      description: Returns repository maintainability index, overall health score (0-100), and lint compliance metrics.
+      operationId: getCodeHealthMetrics
+      parameters:
+        - name: repo
+          in: query
+          description: Target repository slug (e.g. `github.com/org/core-service`)
+          required: false
+          schema:
+            type: string
+            default: github.com/devpulse/core-service
+            example: github.com/devpulse/core-service
+        - name: branch
+          in: query
+          description: Git branch name to evaluate
+          required: false
+          schema:
+            type: string
+            default: main
+            example: main
+      responses:
+        '200':
+          description: Code health report retrieved successfully
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+            Deprecation:
+              $ref: '#/components/headers/Deprecation'
+            Sunset:
+              $ref: '#/components/headers/Sunset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeHealthResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /metrics/security-audit:
+    get:
+      tags:
+        - Security & Vulnerabilities
+      summary: Inspect software dependency vulnerabilities and CVE risks
+      description: Returns vulnerability scan results categorized by severity (critical, high, medium, low) and open advisories.
+      operationId: getSecurityAuditMetrics
+      parameters:
+        - name: repo
+          in: query
+          description: Target repository slug
+          required: false
+          schema:
+            type: string
+            default: github.com/devpulse/core-service
+            example: github.com/devpulse/core-service
+        - name: severity_min
+          in: query
+          description: Minimum severity threshold to report
+          required: false
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+            default: low
+            example: medium
+      responses:
+        '200':
+          description: Security vulnerability audit retrieved
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityAuditResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /metrics/tech-debt:
+    get:
+      tags:
+        - Technical Debt
+      summary: Calculate technical debt ratios and estimated remediation time
+      description: Returns estimated engineering hours required to resolve accumulated code smells, architectural debt, and duplicate lines.
+      operationId: getTechnicalDebtMetrics
+      parameters:
+        - name: repo
+          in: query
+          description: Target repository slug
+          required: false
+          schema:
+            type: string
+            default: github.com/devpulse/core-service
+            example: github.com/devpulse/core-service
+      responses:
+        '200':
+          description: Technical debt metrics retrieved
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TechDebtResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /metrics/build-benchmarks:
+    get:
+      tags:
+        - CI/CD & Build Performance
+      summary: Retrieve automated build benchmarks and test suite duration
+      description: Exposes telemetry on CI pipeline durations, unit/integration test execution timings, and compiled bundle footprint.
+      operationId: getBuildBenchmarks
+      parameters:
+        - name: repo
+          in: query
+          description: Target repository slug
+          required: false
+          schema:
+            type: string
+            default: github.com/devpulse/core-service
+            example: github.com/devpulse/core-service
+      responses:
+        '200':
+          description: Build benchmark report retrieved
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildBenchmarkResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /analyze/repository:
+    post:
+      tags:
+        - Analysis Engine
+      summary: Dispatch an on-demand static code audit job
+      description: Queues or generates an immediate static code review report based on repository source parameters.
+      operationId: postAnalyzeRepository
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepositoryAnalysisRequest'
+      responses:
+        '201':
+          description: Analysis successfully processed
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryAnalysisResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: Primary API Key authentication header.
+    ApiKeyQuery:
+      type: apiKey
+      in: query
+      name: api_key
+      description: Fallback API Key query parameter.
+
+  headers:
+    X-RateLimit-Limit:
+      description: Maximum permitted requests within the 60-second sliding/fixed window for the active tier.
+      schema:
+        type: integer
+        example: 20
+    X-RateLimit-Remaining:
+      description: Remaining request allowance in the current window.
+      schema:
+        type: integer
+        example: 19
+    X-RateLimit-Reset:
+      description: Seconds until the rate limit window replenishes.
+      schema:
+        type: integer
+        example: 45
+    Retry-After:
+      description: Number of seconds the client must pause before retrying following an HTTP 429 response.
+      schema:
+        type: integer
+        example: 18
+    Deprecation:
+      description: Signals that the requested API version is deprecated (RFC 8594).
+      schema:
+        type: string
+        example: "true"
+    Sunset:
+      description: Timestamp representing the planned decommission date for the legacy API version.
+      schema:
+        type: string
+        example: "Wed, 11 Nov 2026 00:00:00 GMT"
+
+  responses:
+    UnauthorizedError:
+      description: Authentication failed due to missing or invalid API Key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: error
+            code: 401
+            message: "Missing or invalid API key. Supply your key via 'x-api-key' header or 'api_key' query parameter."
+            tier: null
+            timestamp: "2026-10-02T14:15:00.000Z"
+    RateLimitError:
+      description: Client rate limit quota exceeded for the configured tier.
+      headers:
+        Retry-After:
+          $ref: '#/components/headers/Retry-After'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/X-RateLimit-Limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/X-RateLimit-Remaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/X-RateLimit-Reset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RateLimitErrorResponse'
+          example:
+            status: error
+            code: 429
+            message: "Rate limit exceeded. Tier quota of 20 requests per 60 seconds reached."
+            tier: "developer"
+            retryAfterSeconds: 18
+            timestamp: "2026-10-02T14:15:30.000Z"
+    ValidationError:
+      description: Request body failed validation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: error
+            code: 400
+            message: "Validation failed: 'repo_url' is a required string field."
+            errors:
+              - field: "repo_url"
+                issue: "Field is required"
+            timestamp: "2026-10-02T14:15:00.000Z"
+    InternalServerError:
+      description: Server error occurred while processing the request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: error
+            code: 500
+            message: "Internal server error."
+            timestamp: "2026-10-02T14:15:00.000Z"
+
+  schemas:
+    CodeHealthResponse:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          example: success
+        version:
+          type: string
+          example: v2
+        data:
+          type: object
+          required:
+            - repository
+            - healthScore
+            - maintainabilityGrade
+            - lintCompliance
+          properties:
+            repository:
+              type: string
+              example: github.com/devpulse/core-service
+            branch:
+              type: string
+              example: main
+            healthScore:
+              type: integer
+              minimum: 0
+              maximum: 100
+              example: 92
+            maintainabilityGrade:
+              type: string
+              enum: [A, B, C, D, F]
+              example: A
+            cyclomaticComplexityAvg:
+              type: number
+              example: 4.8
+            lintCompliance:
+              type: object
+              properties:
+                rulesChecked:
+                  type: integer
+                  example: 142
+                passed:
+                  type: integer
+                  example: 139
+                violations:
+                  type: integer
+                  example: 3
+                complianceRate:
+                  type: string
+                  example: "97.9%"
+            lastAuditedAt:
+              type: string
+              format: date-time
+              example: "2026-10-02T12:00:00.000Z"
+
+    SecurityAuditResponse:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          example: success
+        version:
+          type: string
+          example: v2
+        data:
+          type: object
+          required:
+            - repository
+            - totalVulnerabilities
+            - severityCounts
+          properties:
+            repository:
+              type: string
+              example: github.com/devpulse/core-service
+            auditStatus:
+              type: string
+              example: "CLEAN_PASS"
+            totalVulnerabilities:
+              type: integer
+              example: 2
+            severityCounts:
+              type: object
+              properties:
+                critical:
+                  type: integer
+                  example: 0
+                high:
+                  type: integer
+                  example: 0
+                medium:
+                  type: integer
+                  example: 1
+                low:
+                  type: integer
+                  example: 1
+            advisories:
+              type: array
+              items:
+                type: object
+                properties:
+                  cveId:
+                    type: string
+                    example: "CVE-2026-44012"
+                  package:
+                    type: string
+                    example: "axios"
+                  installedVersion:
+                    type: string
+                    example: "1.6.0"
+                  patchedVersion:
+                    type: string
+                    example: "1.7.4"
+                  severity:
+                    type: string
+                    example: "medium"
+
+    TechDebtResponse:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          example: success
+        version:
+          type: string
+          example: v2
+        data:
+          type: object
+          required:
+            - repository
+            - techDebtRatio
+            - estimatedRemediationHours
+          properties:
+            repository:
+              type: string
+              example: github.com/devpulse/core-service
+            techDebtRatio:
+              type: string
+              example: "3.4%"
+            estimatedRemediationHours:
+              type: number
+              example: 18.5
+            duplicatedLinesCount:
+              type: integer
+              example: 140
+            duplicatedBlocksPercentage:
+              type: string
+              example: "1.8%"
+            codeSmellCount:
+              type: integer
+              example: 12
+            remediationCostEstimateUsd:
+              type: integer
+              example: 1480
+
+    BuildBenchmarkResponse:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          example: success
+        version:
+          type: string
+          example: v2
+        data:
+          type: object
+          required:
+            - repository
+            - buildDurationSeconds
+            - testSuiteDurationSeconds
+            - bundleSizeKb
+          properties:
+            repository:
+              type: string
+              example: github.com/devpulse/core-service
+            pipelineStatus:
+              type: string
+              example: "PASSED"
+            buildDurationSeconds:
+              type: number
+              example: 42.6
+            testSuiteDurationSeconds:
+              type: number
+              example: 18.2
+            testsPassed:
+              type: integer
+              example: 312
+            testsFailed:
+              type: integer
+              example: 0
+            bundleSizeKb:
+              type: number
+              example: 248.5
+            treeShakingEfficiency:
+              type: string
+              example: "94.2%"
+
+    RepositoryAnalysisRequest:
+      type: object
+      required:
+        - repo_url
+      properties:
+        repo_url:
+          type: string
+          format: uri
+          example: "https://github.com/devpulse/example-service"
+        branch:
+          type: string
+          default: "main"
+          example: "main"
+        language:
+          type: string
+          enum: [typescript, javascript, python, go, rust]
+          default: "typescript"
+          example: "typescript"
+        analysis_depth:
+          type: string
+          enum: [quick, standard, deep]
+          default: "standard"
+          example: "standard"
+
+    RepositoryAnalysisResponse:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          example: success
+        version:
+          type: string
+          example: v2
+        data:
+          type: object
+          properties:
+            jobId:
+              type: string
+              example: "job_anlz_99a8bc43"
+            targetRepo:
+              type: string
+              example: "https://github.com/devpulse/example-service"
+            status:
+              type: string
+              example: "COMPLETED"
+            summaryScore:
+              type: integer
+              example: 89
+            findingsCount:
+              type: integer
+              example: 5
+            recommendedAction:
+              type: string
+              example: "Upgrade 1 medium severity dependency and refactor 2 long methods."
+            completedAt:
+              type: string
+              format: date-time
+              example: "2026-10-02T14:15:35.000Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - status
+        - code
+        - message
+      properties:
+        status:
+          type: string
+          example: error
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "Validation failed"
+        errors:
+          type: array
+          items:
+            type: object
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-10-02T14:15:00.000Z"
+
+    RateLimitErrorResponse:
+      type: object
+      required:
+        - status
+        - code
+        - message
+        - retryAfterSeconds
+      properties:
+        status:
+          type: string
+          example: error
+        code:
+          type: integer
+          example: 429
+        message:
+          type: string
+          example: "Rate limit exceeded. Tier quota of 20 requests per 60 seconds reached."
+        tier:
+          type: string
+          example: "developer"
+        retryAfterSeconds:
+          type: integer
+          example: 18
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-10-02T14:15:30.000Z"

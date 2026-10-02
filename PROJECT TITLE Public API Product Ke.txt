@@ -1,0 +1,67 @@
+PROJECT TITLE: Public API Product: Keys, Rate Limits, Versioning and OpenAPI Documentation for an Independent Software House (Week 4 — Specialist Advanced Build)
+
+OBJECTIVE: For Week 4, package the Independent Software House's data service as a public API product with API keys, tiered rate limits, versioning and interactive documentation. This is a standalone, individual, portfolio-grade deliverable. It moves beyond your Week 3 project ("Full E-Commerce Storefront with Cart & Checkout Flow for a National Marketing Agency") by requiring a new skill, a new tool (OpenAPI + Express) and a different kind of problem, so you must not reuse the Week 3 topic, code, files or data. Week 4 is the Specialist Advanced stage of the internship: more depth, more evidence and more professional judgement than before.
+
+YOUR SPECIAL CONSTRAINT: Comparison rule: implement or analyse two alternative approaches to the hardest part of the task and justify your final choice with evidence.
+
+YOUR ROLE: Member 6 — individual contributor (Note: this is your OWN individual Week 4 task, building on the skills from Weeks 1, 2 and 3.)
+
+PRIMARY TOOL TO LEARN & USE (Week 4): OpenAPI + Express
+
+WHAT YOU NEED TO ACCOMPLISH: Package the Independent Software House's data service as a public API product with API keys, tiered rate limits, versioning and interactive documentation.
+
+REQUIRED FEATURES / DELIVERABLE SCOPE (your project should demonstrate at least these):
+  - An API with key management, usage quotas and 429 responses with Retry-After
+  - An OpenAPI 3 specification with examples and a generated interactive documentation page
+  - v1 and v2 versions with a deprecation notice and a sample client script
+  - A clearly defined scope statement for the Independent Software House, written before you start
+  - Evidence of testing or validation, with problems found and fixed documented
+
+DIFFICULTY LEVEL: Specialist / Advanced Professional Assignment  |  PROGRESSION: Week 1 was Fundamentals ("Subscription Billing Portal for a Fintech App (Team 2)"), Week 2 was Applied Skills ("Premium 3D Restaurants Business Website (Week 2 — Individual Build & Deploy)"), Week 3 was Professional Practice ("Full E-Commerce Storefront with Cart & Checkout Flow for a National Marketing Agency"), and Week 4 is Specialist Depth in your Web Development track.
+
+REQUIRED TOOLS / SOFTWARE: OpenAPI + Express (primary), plus GitHub or a shared Drive folder for delivery, screen-recording software for your mandatory video, and any supporting tools your deliverable needs. Prefer free or open-source options.
+
+STEP-BY-STEP IMPLEMENTATION INSTRUCTIONS:
+  1. Re-read your Week 3 deliverable and write down 3 things you did well and 2 gaps. Week 4 must target a different skill from Week 3 — note which new skill you will practise.
+  2. Spend 30-45 minutes on the learning link below, focused only on what this task needs, and write a 5-line plan with one measurable success target (for example a metric, a test count or a time limit).
+  3. Define 5 endpoints for the Independent Software House and write the OpenAPI spec before the code.
+  4. Implement API-key authentication and three usage tiers with per-key counters.
+  5. Add v2 with one breaking change and keep v1 working with a Deprecation header.
+  6. Generate documentation with Swagger UI or Redoc and test every example.
+  7. Write a 20-line client script and a load test that proves rate limits work.
+  8. Validate your work: the documentation examples must work as written. Record what you found and what you fixed.
+  9. Write your documentation: a README or report explaining your approach, the tools, the decisions you made and the results, with at least one chart, table or screenshot.
+  10. Push all files to a GitHub repository (or a shared Drive folder if non-code) with a clear, professional README and a changelog of what you tried.
+  11. Record a screen-recording video (5-10 minutes) where you SHOW YOUR SCREEN and personally EXPLAIN what you built, the tool you used, the steps you followed and the problems you solved. This video is a MANDATORY submission.
+  12. Upload your video, screenshots and files, then submit the form or link shared by your Group Lead.
+
+EXPECTED FINAL OUTPUT / DELIVERABLES:
+  - API service and OpenAPI file
+  - Documentation page and rate-limit proof
+  - A GitHub repository or shared Drive folder containing all files, with a clear README
+  - Screenshots or exported evidence of your work at each major stage
+  - A written summary (half a page to one page) explaining your approach and the reasoning behind your key decisions
+  - Mandatory screen-recording video walkthrough
+
+DOCUMENTATION / REPORTING REQUIREMENTS: Your README/report must explain (1) what you built or analysed and why, (2) the tools and techniques you used, (3) what you tested and what you found, including numbers, (4) at least one limitation and one thing you would improve with more time. Write it so a hiring manager unfamiliar with the assignment could understand your work from the documentation alone.
+
+QUALITY / CHECKING REQUIREMENTS (review before you submit):
+  - Every required feature above is present and works — no placeholders or partial mock-ups
+  - The documentation examples must work as written.
+  - Work is clearly different in topic, tool and method from your Week 1, Week 2 and Week 3 tasks
+  - Documentation is complete, professional and free of placeholder text
+  - Evidence (screenshots, exports, repository) is included and organised
+  - Mandatory video is recorded, clear, and explains your own understanding in your own words
+
+PROFESSIONAL TIPS: Treat this like a paid client deliverable for the Independent Software House. State your assumptions, show your evidence and be honest about limitations — reviewers trust a candidate who reports what did not work far more than one who hides it. Keep a short changelog; it is exactly the kind of evidence that makes a portfolio piece credible in an interview.
+
+LEARN OPENAPI + EXPRESS (video guide): https://www.youtube.com/results?search_query=OpenAPI+Swagger+API+keys+rate+limiting+versioning+tutorial
+
+MANDATORY VIDEO SUBMISSION: When your Week 4 task is complete, you must submit a screen-recording video (mandatory, no exceptions) of your working project. Narrate the walkthrough in your own voice (mandatory) — explain what you built, the tool/technology you used, the steps you followed, and any problems you solved. Switching on your webcam so your face is visible alongside the screen recording is recommended but optional. These videos may be reviewed by HEC and the University, so keep the tone clear, calm and professional, and make sure your explanation shows you genuinely understand your own work.
+
+AI ASSISTANCE GUIDANCE: You may use ChatGPT, Claude, Gemini, GitHub Copilot or another AI assistant to help with research, troubleshooting, brainstorming, coding, analysis and documentation for "Public API Product: Keys, Rate Limits, Versioning and OpenAPI Documentation for an Independent Software House". AI is your assistant, not your replacement: do NOT copy AI output blindly. Verify every fact, number, code snippet, design choice and source it gives you against a reliable reference or by testing it yourself, and be ready to explain every part of your final work without the AI. Follow this workflow: (1) explain the problem to the AI, (2) ask it to explain the underlying concept first, (3) ask for a small example, not the full solution, (4) test the example yourself, (5) make sure you understand it, (6) ask the AI to help you debug or refine rough spots, (7) double-check the result actually works, (8) rewrite and clean up the final version in your own words, (9) note down what you learned and which AI-suggested items you rejected or corrected.
+
+EXAMPLE AI PROMPTS YOU CAN USE:
+1. "I'm working on \"Public API Product: Keys, Rate Limits, Versioning and OpenAPI Documentation for an Independent Software House\" during Week 4 of my SDC internship. I'm using OpenAPI + Express. Explain the key concepts and how I should approach it step by step. Do not give me the finished solution — explain the reasoning before showing any example."
+2. "Here is my current approach for \"Public API Product: Keys, Rate Limits, Versioning and OpenAPI Documentation for an Independent Software House\" so far: [paste your work/plan]. I expected [X] but got [Y]. Help me understand why, without rewriting the whole thing for me."
+3. "Review this section of my work on \"Public API Product: Keys, Rate Limits, Versioning and OpenAPI Documentation for an Independent Software House\" and point out 2-3 weaknesses a real employer or reviewer would notice. For each one, explain how I can verify the problem myself."
