@@ -37,6 +37,7 @@
       <div class="nav-center">
         <a href="#playground" class="nav-anchor active">Studio Playground</a>
         <a href="#tiers" class="nav-anchor">Tiers &amp; Quotas</a>
+        <a href="#key-manager" class="nav-anchor">API Key Vault</a>
         <a href="#comparison" class="nav-anchor">Benchmark Proof</a>
         <a href="/docs" class="nav-anchor ext" target="_blank">
           Swagger Docs
@@ -150,11 +151,84 @@
       </div>
     </section>
 
+    <!-- Key Provisioning Vault Section -->
+    <section id="key-manager" class="key-vault-section">
+      <div class="section-badge">DEVELOPER ACCESS VAULT</div>
+      <h2 class="section-title">Instant API Key Provisioning</h2>
+      <p class="section-subtitle">Generate custom production API keys on-the-fly, assign subscription tiers, and mount directly into the studio.</p>
+
+      <div class="provision-card">
+        <div class="prov-form-row">
+          <div class="prov-input-group">
+            <label>Application / Client Name</label>
+            <input type="text" id="provClientName" placeholder="e.g. Acme Analytics Service" value="Acme Cloud Runner">
+          </div>
+          <div class="prov-input-group">
+            <label>Subscription Tier</label>
+            <select id="provTierSelect">
+              <option value="free">Free Starter (5 req / 60s)</option>
+              <option value="developer" selected>Developer Pro (20 req / 60s)</option>
+              <option value="enterprise">Enterprise (100 req / 60s)</option>
+            </select>
+          </div>
+          <button id="btnProvisionKey" class="btn-provision">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2l-2 2m-1-1l-2 2m-1-1l-2 2m-1-1l-2 2M3 21l9-9m0 0a5 5 0 1 0-7-7 5 5 0 0 0 7 7z"></path></svg>
+            <span>Mint API Key</span>
+          </button>
+        </div>
+
+        <!-- Dynamic Result Pill -->
+        <div id="provisionResultBanner" class="provision-result" style="display: none;">
+          <div class="prov-left">
+            <span class="prov-tag">PROVISIONED</span>
+            <code id="provKeyOutput">devpulse_pro_...</code>
+            <span id="provQuotaTag" class="prov-quota-tag">20 req/60s</span>
+          </div>
+          <div class="prov-actions">
+            <button id="btnMountProvisionedKey" class="btn-mount">Mount in Studio</button>
+            <button id="btnCopyProvisionedKey" class="btn-copy-sm">Copy Key</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Studio Workbench / Playground Section -->
     <section id="playground" class="studio-section">
       <div class="section-badge">INTERACTIVE WORKBENCH</div>
       <h2 class="section-title">Live API Console &amp; Rate Limit Telemetry</h2>
       <p class="section-subtitle">Send real-time HTTP requests, inspect headers, or simulate traffic surges to see the rate limiter in action.</p>
+
+      <!-- Live Telemetry Ribbon -->
+      <div class="telemetry-ribbon">
+        <div class="telem-stat">
+          <span class="telem-label">Total Calls Processed</span>
+          <div class="telem-val-group">
+            <span id="telemCallCount" class="telem-value">0</span>
+            <span class="telem-badge live">LIVE</span>
+          </div>
+        </div>
+        <div class="telem-stat">
+          <span class="telem-label">Avg Core Latency</span>
+          <div class="telem-val-group">
+            <span id="telemLatency" class="telem-value">12 ms</span>
+            <span class="telem-badge good">&lt;1ms core</span>
+          </div>
+        </div>
+        <div class="telem-stat">
+          <span class="telem-label">Throttled Calls (429)</span>
+          <div class="telem-val-group">
+            <span id="telem429Count" class="telem-value">0</span>
+            <span class="telem-badge warn">Protected</span>
+          </div>
+        </div>
+        <div class="telem-stat">
+          <span class="telem-label">Rate Limiter Engine</span>
+          <div class="telem-val-group">
+            <span class="telem-value">Sliding</span>
+            <span class="telem-badge good">O(1) Rolling</span>
+          </div>
+        </div>
+      </div>
 
       <div class="studio-workbench">
         <!-- Workbench Left: Request Builder -->
@@ -220,6 +294,19 @@
             </div>
           </div>
 
+          <!-- Client Code Generator -->
+          <div class="code-snippet-box">
+            <div class="snippet-header">
+              <span class="snip-title">Client Code Snippet</span>
+              <div class="lang-pills">
+                <button class="lang-pill active" data-lang="curl">cURL</button>
+                <button class="lang-pill" data-lang="js">Node.js</button>
+                <button class="lang-pill" data-lang="python">Python</button>
+              </div>
+            </div>
+            <pre class="snippet-code-pre"><code id="snippetCode">curl -H "x-api-key: devpulse_pro_demo_key" http://localhost:3000/api/v2/metrics/code-health</code></pre>
+          </div>
+
           <!-- Burst Throttling Test Box -->
           <div class="burst-tester-box">
             <div class="burst-info">
@@ -240,7 +327,7 @@
               <span id="latencyTicker" class="latency-chip">12 ms</span>
             </div>
             <div class="inspector-actions">
-              <button id="copyResponseBtn" class="copy-chip">Copy JSON</button>
+              <button id="copyResponseBtn" class="copy-chip">Copy</button>
             </div>
           </div>
 
@@ -267,9 +354,28 @@
             <div id="deprecationPill" class="h-badge warning" style="display: none;"><code>Deprecation: true</code></div>
           </div>
 
+          <!-- Inspector View Switcher Tabs -->
+          <div class="inspector-tabs">
+            <button id="tabJson" class="insp-tab active">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+              <span>JSON Response</span>
+            </button>
+            <button id="tabVisual" class="insp-tab">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
+              <span>Visual Metrics Dashboard</span>
+            </button>
+          </div>
+
           <!-- Syntax-Highlighted JSON IDE Block -->
-          <div class="json-terminal">
+          <div id="jsonContainer" class="json-terminal">
             <pre><code id="jsonResponseBody">// Click "Execute" to inspect live response...</code></pre>
+          </div>
+
+          <!-- Visual Metrics Dashboard Container -->
+          <div id="visualContainer" class="visual-terminal" style="display: none;">
+            <div id="visualContent" class="visual-grid">
+              <!-- Dynamically populated by app.js based on endpoint -->
+            </div>
           </div>
         </div>
       </div>

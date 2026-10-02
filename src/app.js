@@ -10,6 +10,7 @@ const fs = require('fs');
 const swaggerUi = require('swagger-ui-express');
 
 const { apiKeyAuth } = require('./middleware/auth');
+const { registerApiKey, API_KEYS } = require('./data/apiKeys');
 const { rateLimiterMiddleware } = require('./middleware/rateLimiter');
 const { deprecationMiddleware } = require('./middleware/deprecation');
 const { notFoundHandler, globalErrorHandler } = require('./middleware/errorHandler');
@@ -38,6 +39,40 @@ app.get('/', (req, res) => {
 });
 app.get('/portal', (req, res) => {
   res.sendFile(path.join(publicDirPath, 'index.html'));
+});
+
+// Developer Portal Key Management Endpoints
+app.get('/api/keys', (req, res) => {
+  const keys = Array.from(API_KEYS.values()).map(k => ({
+    key: k.key,
+    clientName: k.clientName,
+    tier: k.tier,
+    quota: k.tierConfig.limit,
+    windowSeconds: k.tierConfig.windowSeconds,
+    status: k.status,
+    createdAt: k.createdAt
+  }));
+  res.status(200).json({ status: 'success', data: keys });
+});
+
+app.post('/api/keys/provision', (req, res) => {
+  const { clientName, tier } = req.body || {};
+  const validTier = ['free', 'developer', 'enterprise'].includes(tier) ? tier : 'free';
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+  const newKey = `devpulse_${validTier}_${randomSuffix}`;
+  const record = registerApiKey(newKey, clientName || 'Portfolio Studio User', validTier);
+  res.status(201).json({
+    status: 'success',
+    message: 'API Key generated and provisioned successfully',
+    data: {
+      key: record.key,
+      clientName: record.clientName,
+      tier: record.tier,
+      quota: record.tierConfig.limit,
+      windowSeconds: record.tierConfig.windowSeconds,
+      createdAt: record.createdAt
+    }
+  });
 });
 
 // Public Health Check Endpoint (No API Key Required)

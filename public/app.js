@@ -1,6 +1,6 @@
 /**
- * DevPulse 2026 Studio Workbench Interactive Client
- * Modern Silicon Valley Developer Experience
+ * DevPulse 2026 Developer Studio WebApp Client
+ * Interactive Key Provisioning, Telemetry Ribbon, Visual Dashboard & Code Generator
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -32,12 +32,40 @@ document.addEventListener('DOMContentLoaded', () => {
   const deprecationPill = document.getElementById('deprecationPill');
   const jsonResponseBody = document.getElementById('jsonResponseBody');
 
+  // New WebApp SaaS Elements
+  const provClientName = document.getElementById('provClientName');
+  const provTierSelect = document.getElementById('provTierSelect');
+  const btnProvisionKey = document.getElementById('btnProvisionKey');
+  const provisionResultBanner = document.getElementById('provisionResultBanner');
+  const provKeyOutput = document.getElementById('provKeyOutput');
+  const provQuotaTag = document.getElementById('provQuotaTag');
+  const btnMountProvisionedKey = document.getElementById('btnMountProvisionedKey');
+  const btnCopyProvisionedKey = document.getElementById('btnCopyProvisionedKey');
+
+  const telemCallCount = document.getElementById('telemCallCount');
+  const telemLatency = document.getElementById('telemLatency');
+  const telem429Count = document.getElementById('telem429Count');
+
+  const tabJson = document.getElementById('tabJson');
+  const tabVisual = document.getElementById('tabVisual');
+  const jsonContainer = document.getElementById('jsonContainer');
+  const visualContainer = document.getElementById('visualContainer');
+  const visualContent = document.getElementById('visualContent');
+
+  const langPills = document.querySelectorAll('.lang-pill');
+  const snippetCode = document.getElementById('snippetCode');
+
   // State
   let activeVersion = 'v2';
   let activePath = '/metrics/code-health';
   let activeMethod = 'GET';
   let currentTierLimit = 20;
   let currentRawJson = '';
+  let activeLanguage = 'curl';
+
+  let totalCalls = 0;
+  let total429s = 0;
+  let lastResponseData = null;
 
   // 1. Theme Management (Defaults to Crisp 2026 Light Studio Mode)
   const savedTheme = localStorage.getItem('devpulse_theme') || 'light';
@@ -54,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('devpulse_theme', theme);
   }
 
-  // 2. High-Tech Syntax Highlighter for Terminal JSON
+  // 2. High-Tech Syntax Highlighter
   function syntaxHighlight(json) {
     if (typeof json !== 'string') {
       json = JSON.stringify(json, undefined, 2);
@@ -80,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   }
 
-  // 3. Copy cURL Command
+  // 3. Quick Copy cURL
   copyCurlBtn.addEventListener('click', () => {
     const curlCommand = `curl -H "x-api-key: ${apiKeyField.value.trim()}" http://localhost:3000${targetUrlInput.value}`;
     navigator.clipboard.writeText(curlCommand).then(() => {
@@ -90,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 4. Tier Card Selection
+  // 4. Tier Selection Cards
   tierCards.forEach((card) => {
     card.addEventListener('click', () => {
       tierCards.forEach((c) => {
@@ -108,10 +136,61 @@ document.addEventListener('DOMContentLoaded', () => {
       gaugeNumbers.textContent = `${currentTierLimit} / ${currentTierLimit} Remaining (100%)`;
       gaugeBarFill.style.width = '100%';
       gaugeBarFill.className = 'gauge-bar-fill';
+      updateSnippet();
     });
   });
 
-  // 5. Version Toggle (v1 vs v2)
+  // 5. Dynamic API Key Provisioning Vault
+  btnProvisionKey.addEventListener('click', async () => {
+    btnProvisionKey.disabled = true;
+    btnProvisionKey.innerHTML = `<span>Minting...</span>`;
+
+    const clientName = provClientName.value.trim() || 'Custom Developer App';
+    const tier = provTierSelect.value;
+
+    try {
+      const res = await fetch('/api/keys/provision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientName, tier })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        const mintedKey = data.data.key;
+        provKeyOutput.textContent = mintedKey;
+        provQuotaTag.textContent = `${data.data.quota} req / 60s (${data.data.tier})`;
+        provisionResultBanner.style.display = 'flex';
+
+        btnMountProvisionedKey.onclick = () => {
+          apiKeyField.value = mintedKey;
+          currentTierLimit = data.data.quota;
+          lblLimit.textContent = currentTierLimit;
+          gaugeNumbers.textContent = `${currentTierLimit} / ${currentTierLimit} Remaining (100%)`;
+          gaugeBarFill.style.width = '100%';
+          btnMountProvisionedKey.textContent = 'Mounted! ✓';
+          setTimeout(() => (btnMountProvisionedKey.textContent = 'Mount in Studio'), 2000);
+          updateSnippet();
+        };
+
+        btnCopyProvisionedKey.onclick = () => {
+          navigator.clipboard.writeText(mintedKey).then(() => {
+            btnCopyProvisionedKey.textContent = 'Copied! ✓';
+            setTimeout(() => (btnCopyProvisionedKey.textContent = 'Copy Key'), 2000);
+          });
+        };
+      }
+    } catch (err) {
+      alert('Key provisioning error: ' + err.message);
+    } finally {
+      btnProvisionKey.disabled = false;
+      btnProvisionKey.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2l-2 2m-1-1l-2 2m-1-1l-2 2m-1-1l-2 2M3 21l9-9m0 0a5 5 0 1 0-7-7 5 5 0 0 0 7 7z"></path></svg>
+        <span>Mint API Key</span>
+      `;
+    }
+  });
+
+  // 6. Version Toggle (v1 vs v2)
   btnV1.addEventListener('click', () => setVersion('v1'));
   btnV2.addEventListener('click', () => setVersion('v2'));
 
@@ -127,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
     syncUrl();
   }
 
-  // 6. Endpoint Picker
+  // 7. Endpoint Picker
   epChips.forEach((chip) => {
     chip.addEventListener('click', () => {
       epChips.forEach((c) => c.classList.remove('active'));
@@ -155,11 +234,198 @@ document.addEventListener('DOMContentLoaded', () => {
       url += `?repo=${encodeURIComponent(repoParamField.value.trim())}`;
     }
     targetUrlInput.value = url;
+    updateSnippet();
   }
 
   repoParamField.addEventListener('input', syncUrl);
+  apiKeyField.addEventListener('input', updateSnippet);
 
-  // 7. Execute Request
+  // 8. Client Code Generator Snippets
+  langPills.forEach((pill) => {
+    pill.addEventListener('click', () => {
+      langPills.forEach((p) => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeLanguage = pill.dataset.lang;
+      updateSnippet();
+    });
+  });
+
+  function updateSnippet() {
+    const key = apiKeyField.value.trim();
+    const url = `http://localhost:3000${targetUrlInput.value}`;
+
+    if (activeLanguage === 'curl') {
+      if (activeMethod === 'POST') {
+        snippetCode.textContent = `curl -X POST -H "x-api-key: ${key}" -H "Content-Type: application/json" -d '{"repo_url":"https://github.com/devpulse/microservice-audit","branch":"main","language":"typescript","analysis_depth":"standard"}' ${url}`;
+      } else {
+        snippetCode.textContent = `curl -H "x-api-key: ${key}" "${url}"`;
+      }
+    } else if (activeLanguage === 'js') {
+      snippetCode.textContent = `const response = await fetch('${url}', {\n  method: '${activeMethod}',\n  headers: { 'x-api-key': '${key}' }\n});\nconst data = await response.json();\nconsole.log(data);`;
+    } else if (activeLanguage === 'python') {
+      snippetCode.textContent = `import requests\n\nheaders = {'x-api-key': '${key}'}\nresponse = requests.${activeMethod.toLowerCase()}('${url}', headers=headers)\nprint(response.json())`;
+    }
+  }
+
+  // 9. Inspector Tab Switcher
+  tabJson.addEventListener('click', () => {
+    tabJson.classList.add('active');
+    tabVisual.classList.remove('active');
+    jsonContainer.style.display = 'block';
+    visualContainer.style.display = 'none';
+  });
+
+  tabVisual.addEventListener('click', () => {
+    tabVisual.classList.add('active');
+    tabJson.classList.remove('active');
+    jsonContainer.style.display = 'none';
+    visualContainer.style.display = 'block';
+    if (lastResponseData) {
+      renderVisualDashboard(lastResponseData);
+    }
+  });
+
+  // 10. Visual Dashboard Renderer
+  function renderVisualDashboard(data) {
+    if (!data) return;
+    const payload = data.data || data; // handle enveloped v2 vs flat v1
+    let html = '';
+
+    if (activePath.includes('code-health')) {
+      const score = payload.health_score || payload.healthScore || 94;
+      const coverage = payload.test_coverage || payload.testCoverage || '87.4%';
+      const maintainability = payload.maintainability_index || payload.maintainabilityIndex || 89.1;
+      const duplication = payload.code_duplication || payload.codeDuplication || '2.1%';
+
+      html = `
+        <div class="visual-card span-2">
+          <div class="v-card-title">Overall Codebase Health Index</div>
+          <div class="v-card-val">${score} <span style="font-size: 1rem; color: var(--text-tertiary);">/ 100</span> <span class="v-grade-badge">Grade A+ Certified</span></div>
+          <div class="v-progress-track">
+            <div class="v-progress-fill" style="width: ${score}%;"></div>
+          </div>
+        </div>
+        <div class="visual-card">
+          <div class="v-card-title">Test Coverage</div>
+          <div class="v-card-val" style="color: var(--success);">${coverage}</div>
+          <div class="v-items-list">
+            <div class="v-item-row"><span>Unit Tests:</span> <b>Passed (412/412)</b></div>
+            <div class="v-item-row"><span>Integration:</span> <b>Passed (98/98)</b></div>
+          </div>
+        </div>
+        <div class="visual-card">
+          <div class="v-card-title">Maintainability &amp; Cleanliness</div>
+          <div class="v-card-val" style="color: var(--primary-accent);">${maintainability}</div>
+          <div class="v-items-list">
+            <div class="v-item-row"><span>Code Duplication:</span> <b>${duplication} (Clean)</b></div>
+            <div class="v-item-row"><span>Cyclomatic Complexity:</span> <b>Low (&lt;4.2)</b></div>
+          </div>
+        </div>
+      `;
+    } else if (activePath.includes('security-audit')) {
+      const vulns = payload.vulnerabilities || { critical: 0, high: 0, medium: 2, low: 5 };
+      const packages = payload.packages_scanned || payload.packagesScanned || 142;
+
+      html = `
+        <div class="visual-card span-2">
+          <div class="v-card-title">Security &amp; Vulnerability Matrix</div>
+          <div class="v-card-val" style="color: var(--success);">0 Critical Threats <span class="v-grade-badge">Protected</span></div>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.35rem;">Automated SAST &amp; DAST analysis completed across all active dependencies.</p>
+        </div>
+        <div class="visual-card">
+          <div class="v-card-title">Vulnerability Breakdown</div>
+          <div class="v-items-list">
+            <div class="v-item-row"><span style="color: var(--danger);">Critical:</span> <b>${vulns.critical || 0}</b></div>
+            <div class="v-item-row"><span style="color: #ea580c;">High:</span> <b>${vulns.high || 0}</b></div>
+            <div class="v-item-row"><span style="color: var(--warning);">Medium:</span> <b>${vulns.medium || 2}</b></div>
+            <div class="v-item-row"><span style="color: var(--text-tertiary);">Low:</span> <b>${vulns.low || 5}</b></div>
+          </div>
+        </div>
+        <div class="visual-card">
+          <div class="v-card-title">SBOM &amp; Compliance</div>
+          <div class="v-card-val" style="font-size: 1.25rem;">${packages} Packages</div>
+          <div class="v-items-list">
+            <div class="v-item-row"><span>Licenses:</span> <b>100% Permissive</b></div>
+            <div class="v-item-row"><span>Secrets Leaked:</span> <b>0 Detected</b></div>
+          </div>
+        </div>
+      `;
+    } else if (activePath.includes('tech-debt')) {
+      const hours = payload.remediation_hours || payload.remediationHours || 38.5;
+      const smells = payload.code_smells || payload.codeSmells || 14;
+
+      html = `
+        <div class="visual-card span-2">
+          <div class="v-card-title">Technical Debt Remediation</div>
+          <div class="v-card-val" style="color: var(--warning);">${hours} Hours <span class="v-grade-badge" style="background: var(--warning-bg); color: var(--warning); border-color: var(--warning-border);">Manageable</span></div>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.35rem;">Estimated engineering effort to achieve zero legacy warnings across modules.</p>
+        </div>
+        <div class="visual-card">
+          <div class="v-card-title">Code Smells</div>
+          <div class="v-card-val" style="font-size: 1.25rem;">${smells} Issues</div>
+          <div class="v-items-list">
+            <div class="v-item-row"><span>Long Functions:</span> <b>3</b></div>
+            <div class="v-item-row"><span>Deep Nesting:</span> <b>4</b></div>
+          </div>
+        </div>
+        <div class="visual-card">
+          <div class="v-card-title">Deprecated API Usages</div>
+          <div class="v-card-val" style="font-size: 1.25rem; color: var(--danger);">3 Calls</div>
+          <div class="v-items-list">
+            <div class="v-item-row"><span>Migration:</span> <b>RFC 8594 Flagged</b></div>
+            <div class="v-item-row"><span>Sunset Date:</span> <b>2027-01-01</b></div>
+          </div>
+        </div>
+      `;
+    } else if (activePath.includes('build-benchmarks')) {
+      html = `
+        <div class="visual-card span-2">
+          <div class="v-card-title">CI/CD Build Pipeline Performance</div>
+          <div class="v-card-val" style="color: var(--primary-accent);">22.8s Total <span class="v-grade-badge">Top 5% Speed</span></div>
+        </div>
+        <div class="visual-card">
+          <div class="v-card-title">Compile &amp; Bundle</div>
+          <div class="v-card-val" style="font-size: 1.25rem;">14.2s</div>
+          <div class="v-items-list">
+            <div class="v-item-row"><span>Engine:</span> <b>Vite / ESBuild</b></div>
+            <div class="v-item-row"><span>Asset Size:</span> <b>1.84 MB gzip</b></div>
+          </div>
+        </div>
+        <div class="visual-card">
+          <div class="v-card-title">Test Runner Suite</div>
+          <div class="v-card-val" style="font-size: 1.25rem; color: var(--success);">8.6s</div>
+          <div class="v-items-list">
+            <div class="v-item-row"><span>Parallel Workers:</span> <b>8 Cores</b></div>
+            <div class="v-item-row"><span>Flaky Tests:</span> <b>0</b></div>
+          </div>
+        </div>
+      `;
+    } else if (activePath.includes('analyze/repository')) {
+      const jobId = payload.job_id || payload.jobId || 'job_8f29c01';
+      html = `
+        <div class="visual-card span-2">
+          <div class="v-card-title">Static Analysis Job Telemetry</div>
+          <div class="v-card-val" style="font-size: 1.25rem; color: var(--primary-accent);">
+            ${jobId} <span class="v-grade-badge">Processing</span>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.45rem;">Repository queued in distributed parsing cluster. AST worker assigned.</p>
+        </div>
+        <div class="visual-card span-2">
+          <div class="v-card-title">Payload Metadata</div>
+          <div class="v-items-list">
+            <div class="v-item-row"><span>Repository URL:</span> <b>github.com/devpulse/core-service</b></div>
+            <div class="v-item-row"><span>Branch:</span> <b>main</b></div>
+            <div class="v-item-row"><span>Language:</span> <b>TypeScript / Node.js</b></div>
+            <div class="v-item-row"><span>Parser Depth:</span> <b>Full Semantic Graph</b></div>
+          </div>
+        </div>
+      `;
+    }
+
+    visualContent.innerHTML = html;
+  }
+
+  // 11. Execute Real-Time HTTP Request
   async function dispatchRequest() {
     sendRequestBtn.disabled = true;
     sendRequestBtn.innerHTML = `<span>Sending...</span>`;
@@ -181,10 +447,14 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    totalCalls++;
+    telemCallCount.textContent = totalCalls;
+
     try {
       const res = await fetch(url, fetchOptions);
       const elapsed = Math.round(performance.now() - startTime);
       latencyTicker.textContent = `${elapsed} ms`;
+      telemLatency.textContent = `${elapsed} ms`;
 
       // Status pill styling
       responseStatusBadge.textContent = `${res.status} ${res.statusText}`;
@@ -192,6 +462,8 @@ document.addEventListener('DOMContentLoaded', () => {
         responseStatusBadge.className = 'status-chip s-200';
       } else if (res.status === 429) {
         responseStatusBadge.className = 'status-chip s-429';
+        total429s++;
+        telem429Count.textContent = total429s;
       } else {
         responseStatusBadge.className = 'status-chip';
       }
@@ -239,8 +511,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const json = await res.json();
+      lastResponseData = json;
       currentRawJson = JSON.stringify(json, null, 2);
       jsonResponseBody.innerHTML = syntaxHighlight(json);
+
+      // Also update visual dashboard
+      renderVisualDashboard(json);
 
     } catch (err) {
       responseStatusBadge.textContent = 'Server Offline';
@@ -258,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sendRequestBtn.addEventListener('click', dispatchRequest);
 
-  // 8. Rapid Burst Attack Simulator
+  // 12. Rapid Burst Attack Simulator
   triggerBurstBtn.addEventListener('click', async () => {
     triggerBurstBtn.disabled = true;
     triggerBurstBtn.textContent = 'Simulating Traffic Surge...';
@@ -276,14 +552,15 @@ document.addEventListener('DOMContentLoaded', () => {
     triggerBurstBtn.textContent = 'Fire Burst Surge';
   });
 
-  // 9. Copy Response JSON (Copies clean raw unformatted JSON to clipboard)
+  // 13. Copy Raw Response JSON
   copyResponseBtn.addEventListener('click', () => {
     navigator.clipboard.writeText(currentRawJson || jsonResponseBody.textContent).then(() => {
       copyResponseBtn.textContent = 'Copied! ✓';
-      setTimeout(() => (copyResponseBtn.textContent = 'Copy JSON'), 2000);
+      setTimeout(() => (copyResponseBtn.textContent = 'Copy'), 2000);
     });
   });
 
   // Initial load request
+  updateSnippet();
   dispatchRequest();
 });
