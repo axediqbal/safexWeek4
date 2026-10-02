@@ -1,5 +1,6 @@
 /**
  * DevPulse 2026 Studio Workbench Interactive Client
+ * Modern Silicon Valley Developer Experience
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,13 +37,14 @@ document.addEventListener('DOMContentLoaded', () => {
   let activePath = '/metrics/code-health';
   let activeMethod = 'GET';
   let currentTierLimit = 20;
+  let currentRawJson = '';
 
-  // 1. Theme Management (Light / Dark Mode with LocalStorage)
-  const savedTheme = localStorage.getItem('devpulse_theme') || 'dark';
+  // 1. Theme Management (Defaults to Crisp 2026 Light Studio Mode)
+  const savedTheme = localStorage.getItem('devpulse_theme') || 'light';
   setTheme(savedTheme);
 
   themeToggleBtn.addEventListener('click', () => {
-    const currentTheme = htmlRoot.getAttribute('data-theme') || 'dark';
+    const currentTheme = htmlRoot.getAttribute('data-theme') || 'light';
     const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
   });
@@ -52,38 +54,64 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('devpulse_theme', theme);
   }
 
-  // 2. Copy cURL Command
+  // 2. High-Tech Syntax Highlighter for Terminal JSON
+  function syntaxHighlight(json) {
+    if (typeof json !== 'string') {
+      json = JSON.stringify(json, undefined, 2);
+    }
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(
+      /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+      function (match) {
+        let cls = 'tok-number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = 'tok-key';
+          } else {
+            cls = 'tok-string';
+          }
+        } else if (/true|false/.test(match)) {
+          cls = 'tok-boolean';
+        } else if (/null/.test(match)) {
+          cls = 'tok-null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+      }
+    );
+  }
+
+  // 3. Copy cURL Command
   copyCurlBtn.addEventListener('click', () => {
     const curlCommand = `curl -H "x-api-key: ${apiKeyField.value.trim()}" http://localhost:3000${targetUrlInput.value}`;
     navigator.clipboard.writeText(curlCommand).then(() => {
       const span = copyCurlBtn.querySelector('span');
       span.textContent = 'Copied! ✓';
-      setTimeout(() => span.textContent = 'Copy', 2000);
+      setTimeout(() => (span.textContent = 'Copy'), 2000);
     });
   });
 
-  // 3. Tier Card Selection
-  tierCards.forEach(card => {
+  // 4. Tier Card Selection
+  tierCards.forEach((card) => {
     card.addEventListener('click', () => {
-      tierCards.forEach(c => {
+      tierCards.forEach((c) => {
         c.classList.remove('active');
         const btn = c.querySelector('.tier-select-btn');
         if (btn) btn.textContent = 'Select Key';
       });
       card.classList.add('active');
       const activeBtn = card.querySelector('.tier-select-btn');
-      if (activeBtn) activeBtn.textContent = 'Active Credentials';
+      if (activeBtn) activeBtn.textContent = 'Active Credentials ✓';
 
       apiKeyField.value = card.dataset.key;
       currentTierLimit = parseInt(card.dataset.limit, 10);
       lblLimit.textContent = currentTierLimit;
-      gaugeNumbers.textContent = `${currentTierLimit} / ${currentTierLimit} Remaining`;
+      gaugeNumbers.textContent = `${currentTierLimit} / ${currentTierLimit} Remaining (100%)`;
       gaugeBarFill.style.width = '100%';
       gaugeBarFill.className = 'gauge-bar-fill';
     });
   });
 
-  // 4. Version Toggle (v1 vs v2)
+  // 5. Version Toggle (v1 vs v2)
   btnV1.addEventListener('click', () => setVersion('v1'));
   btnV2.addEventListener('click', () => setVersion('v2'));
 
@@ -99,10 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
     syncUrl();
   }
 
-  // 5. Endpoint Picker
-  epChips.forEach(chip => {
+  // 6. Endpoint Picker
+  epChips.forEach((chip) => {
     chip.addEventListener('click', () => {
-      epChips.forEach(c => c.classList.remove('active'));
+      epChips.forEach((c) => c.classList.remove('active'));
       chip.classList.add('active');
       activeMethod = chip.dataset.method;
       currentMethodBadge.textContent = activeMethod;
@@ -131,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   repoParamField.addEventListener('input', syncUrl);
 
-  // 6. Execute Request
+  // 7. Execute Request
   async function dispatchRequest() {
     sendRequestBtn.disabled = true;
     sendRequestBtn.innerHTML = `<span>Sending...</span>`;
@@ -168,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         responseStatusBadge.className = 'status-chip';
       }
 
-      // Read RFC Headers
+      // Read RFC Rate Limit & Deprecation Headers
       const limit = res.headers.get('x-ratelimit-limit') || currentTierLimit;
       const remaining = res.headers.get('x-ratelimit-remaining') || '0';
       const reset = res.headers.get('x-ratelimit-reset') || '--';
@@ -211,12 +239,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const json = await res.json();
-      jsonResponseBody.textContent = JSON.stringify(json, null, 2);
+      currentRawJson = JSON.stringify(json, null, 2);
+      jsonResponseBody.innerHTML = syntaxHighlight(json);
 
     } catch (err) {
       responseStatusBadge.textContent = 'Server Offline';
       responseStatusBadge.className = 'status-chip s-429';
-      jsonResponseBody.textContent = `// Error connecting to backend: ${err.message}\nMake sure node src/server.js is running on port 3000.`;
+      currentRawJson = `// Error connecting to backend: ${err.message}\nMake sure node src/server.js is running on port 3000.`;
+      jsonResponseBody.textContent = currentRawJson;
     } finally {
       sendRequestBtn.disabled = false;
       sendRequestBtn.innerHTML = `
@@ -228,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sendRequestBtn.addEventListener('click', dispatchRequest);
 
-  // 7. Rapid Burst Attack Simulator
+  // 8. Rapid Burst Attack Simulator
   triggerBurstBtn.addEventListener('click', async () => {
     triggerBurstBtn.disabled = true;
     triggerBurstBtn.textContent = 'Simulating Traffic Surge...';
@@ -239,18 +269,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     for (let i = 1; i <= 8; i++) {
       await dispatchRequest();
-      await new Promise(r => setTimeout(r, 110));
+      await new Promise((r) => setTimeout(r, 110));
     }
 
     triggerBurstBtn.disabled = false;
-    triggerBurstBtn.textContent = 'Fire Burst Traffic';
+    triggerBurstBtn.textContent = 'Fire Burst Surge';
   });
 
-  // 8. Copy Response JSON
+  // 9. Copy Response JSON (Copies clean raw unformatted JSON to clipboard)
   copyResponseBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(jsonResponseBody.textContent).then(() => {
+    navigator.clipboard.writeText(currentRawJson || jsonResponseBody.textContent).then(() => {
       copyResponseBtn.textContent = 'Copied! ✓';
-      setTimeout(() => copyResponseBtn.textContent = 'Copy JSON', 2000);
+      setTimeout(() => (copyResponseBtn.textContent = 'Copy JSON'), 2000);
     });
   });
 
