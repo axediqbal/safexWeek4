@@ -84,6 +84,28 @@
   --gauge-track: rgba(255, 255, 255, 0.1);
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -136,11 +158,16 @@ body {
   justify-content: center;
   color: #fff;
   box-shadow: 0 2px 10px var(--accent-glow);
+  transition: transform 0.25s ease;
+}
+.sidebar-header:hover .brand-glyph {
+  transform: rotate(-6deg) scale(1.08);
 }
 .brand-name {
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: -0.5px;
+  transition: color 0.2s ease;
 }
 .brand-tag {
   font-size: 0.65rem;
@@ -175,17 +202,22 @@ body {
   cursor: pointer;
   width: 100%;
   text-align: left;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
 }
 .nav-item:hover {
   background: var(--bg-subtle);
   color: var(--text-primary);
+  transform: translateX(4px);
+}
+.nav-item:active {
+  transform: scale(0.97);
 }
 .nav-item.active {
   background: var(--primary-accent);
   color: #fff;
   box-shadow: 0 4px 12px var(--accent-glow);
+  transform: translateX(2px);
 }
 .nav-item.active svg {
   color: #fff;
@@ -254,6 +286,11 @@ body {
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: -0.3px;
+  transition: transform 0.25s ease, letter-spacing 0.25s ease;
+}
+.page-title:hover {
+  transform: translateX(2px);
+  letter-spacing: -0.1px;
 }
 .topbar-right {
   display: flex;
@@ -271,6 +308,11 @@ body {
   font-size: 0.775rem;
   font-family: 'Fira Code', monospace;
   color: var(--text-secondary);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.active-key-pill:hover {
+  border-color: var(--primary-accent);
+  transform: translateY(-1px);
 }
 .active-key-pill b {
   color: var(--primary-accent);
@@ -286,10 +328,14 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .topbar-btn:hover {
   background: var(--border-main);
+  transform: translateY(-1px);
+}
+.topbar-btn:active {
+  transform: scale(0.95);
 }
 .topbar-link {
   display: flex;
@@ -303,10 +349,14 @@ body {
   padding: 0.45rem 0.95rem;
   border-radius: 8px;
   box-shadow: 0 2px 10px var(--accent-glow);
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .topbar-link:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 16px var(--accent-glow);
+}
+.topbar-link:active {
+  transform: scale(0.96);
 }
 
 /* Page Body Container */
@@ -333,6 +383,16 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.kpi-card:hover {
+  transform: translateY(-6px) scale(1.015);
+  box-shadow: 0 18px 26px -8px rgba(79, 70, 229, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  border-color: var(--primary-accent);
+}
+.kpi-card:active {
+  transform: translateY(-3px) scale(0.99);
 }
 .kpi-header {
   display: flex;
@@ -345,6 +405,10 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  transition: color 0.2s ease;
+}
+.kpi-card:hover .kpi-title {
+  color: var(--text-secondary);
 }
 .kpi-icon {
   width: 32px;
@@ -355,12 +419,22 @@ body {
   align-items: center;
   justify-content: center;
   color: var(--primary-accent);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+.kpi-card:hover .kpi-icon {
+  transform: rotate(-8deg) scale(1.12);
+  background: rgba(79, 70, 229, 0.1);
 }
 .kpi-value {
   font-size: 1.85rem;
   font-weight: 800;
   letter-spacing: -0.5px;
   color: var(--text-primary);
+  transition: transform 0.25s ease;
+}
+.kpi-card:hover .kpi-value {
+  transform: scale(1.04);
+  transform-origin: left;
 }
 .kpi-footer {
   display: flex;
@@ -374,6 +448,10 @@ body {
   font-size: 0.7rem;
   padding: 1px 6px;
   border-radius: 4px;
+  transition: transform 0.2s ease;
+}
+.kpi-card:hover .kpi-badge {
+  transform: scale(1.05);
 }
 .kpi-badge.good { background: var(--success-bg); color: var(--success); }
 .kpi-badge.warn { background: var(--warning-bg); color: var(--warning); }
@@ -388,10 +466,19 @@ body {
   font-weight: 800;
   letter-spacing: -0.5px;
   margin-bottom: 0.25rem;
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+.section-head:hover h2 {
+  transform: translateX(2px);
+  color: var(--primary-accent);
 }
 .section-head p {
   font-size: 0.875rem;
   color: var(--text-secondary);
+  transition: color 0.25s ease;
+}
+.section-head:hover p {
+  color: var(--text-primary);
 }
 
 /* Charts & Dashboard Section */
@@ -407,6 +494,13 @@ body {
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: var(--card-shadow);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.chart-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--card-hover-shadow);
+  border-color: rgba(79, 70, 229, 0.3);
 }
 .chart-header {
   display: flex;
@@ -417,6 +511,10 @@ body {
 .chart-title {
   font-size: 1rem;
   font-weight: 800;
+  transition: color 0.2s ease;
+}
+.chart-card:hover .chart-title {
+  color: var(--primary-accent);
 }
 .chart-legend {
   display: flex;
@@ -489,6 +587,13 @@ body {
   box-shadow: var(--card-shadow);
   display: flex;
   flex-direction: column;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  animation: fadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.studio-panel:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--card-hover-shadow);
+  border-color: rgba(79, 70, 229, 0.3);
 }
 .panel-top {
   padding: 0.85rem 1.25rem;
@@ -507,6 +612,10 @@ body {
   width: 10px;
   height: 10px;
   border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+.studio-panel:hover .panel-dot {
+  transform: scale(1.15);
 }
 .panel-dot.red { background: #ef4444; }
 .panel-dot.yellow { background: #f59e0b; }
@@ -515,6 +624,10 @@ body {
   font-size: 0.825rem;
   font-weight: 700;
   color: var(--text-secondary);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.studio-panel:hover .panel-title {
+  color: var(--text-primary);
 }
 
 /* Endpoint Buttons */
@@ -536,12 +649,17 @@ body {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
 }
 .ep-btn:hover {
   color: var(--text-primary);
   border-color: var(--primary-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.08);
+}
+.ep-btn:active {
+  transform: scale(0.96);
 }
 .ep-btn.active {
   background: var(--bg-surface);
@@ -578,9 +696,11 @@ body {
   font-family: 'Fira Code', monospace;
   font-size: 0.825rem;
   outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .dispatch-input:focus {
   border-color: var(--primary-accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 .btn-run {
   background: var(--primary-gradient);
@@ -595,11 +715,15 @@ body {
   gap: 0.4rem;
   cursor: pointer;
   box-shadow: 0 4px 12px var(--accent-glow);
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
 }
 .btn-run:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px var(--accent-glow);
+}
+.btn-run:active {
+  transform: scale(0.96);
 }
 
 /* Studio Form Fields */
@@ -618,6 +742,7 @@ body {
   font-size: 0.775rem;
   font-weight: 700;
   color: var(--text-secondary);
+  transition: color 0.2s ease;
 }
 .s-input {
   background: var(--bg-input);
@@ -628,6 +753,7 @@ body {
   font-family: 'Fira Code', monospace;
   font-size: 0.825rem;
   outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .s-input:focus {
   border-color: var(--primary-accent);
@@ -749,11 +875,24 @@ body {
   padding: 1.5rem;
   box-shadow: var(--card-shadow);
   margin-bottom: 2rem;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.key-provision-box:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--card-hover-shadow);
+  border-color: rgba(79, 70, 229, 0.3);
 }
 .key-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
+}
+.key-table tr {
+  transition: background-color 0.15s ease;
+}
+.key-table tbody tr:hover {
+  background: var(--bg-subtle);
 }
 .key-table th, .key-table td {
   padding: 0.75rem 1rem;
