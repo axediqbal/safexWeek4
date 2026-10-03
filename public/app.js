@@ -110,7 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 3. Quick Copy cURL
   copyCurlBtn.addEventListener('click', () => {
-    const curlCommand = `curl -H "x-api-key: ${apiKeyField.value.trim()}" http://localhost:3000${targetUrlInput.value}`;
+    const origin = window.location.origin;
+    const curlCommand = `curl -H "x-api-key: ${apiKeyField.value.trim()}" ${origin}${targetUrlInput.value}`;
     navigator.clipboard.writeText(curlCommand).then(() => {
       const span = copyCurlBtn.querySelector('span');
       span.textContent = 'Copied! ✓';
@@ -252,7 +253,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateSnippet() {
     const key = apiKeyField.value.trim();
-    const url = `http://localhost:3000${targetUrlInput.value}`;
+    const origin = window.location.origin;
+    const url = `${origin}${targetUrlInput.value}`;
 
     if (activeLanguage === 'curl') {
       if (activeMethod === 'POST') {
@@ -561,6 +563,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Initial load request
+  const termCmd = document.querySelector('.term-command');
+  if (termCmd) {
+    termCmd.textContent = `curl -H "x-api-key: devpulse_pro_demo_key" ${window.location.origin}/api/v2/metrics/code-health`;
+  }
   updateSnippet();
   dispatchRequest();
 });

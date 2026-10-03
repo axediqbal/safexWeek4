@@ -33,6 +33,15 @@ app.use(express.json());
 // Serve Static Assets (Developer Portal, CSS, Themes)
 app.use(express.static(publicDirPath));
 
+// Serve React SaaS WebApp at /app if built
+const clientDistPath = path.join(__dirname, '..', 'client', 'dist');
+if (fs.existsSync(clientDistPath)) {
+  app.use('/app', express.static(clientDistPath));
+  app.get(['/app', '/app/*'], (req, res) => {
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
+
 // Root Serves the Interactive Developer Portal
 app.get('/', (req, res) => {
   res.sendFile(path.join(publicDirPath, 'index.html'));
