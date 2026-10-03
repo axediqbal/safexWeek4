@@ -562,6 +562,67 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // 14. Real-Time Engine Heartbeat & Live Stream Telemetry
+  const engineStatusBadge = document.getElementById('engineStatusBadge');
+  const engineUptimeBadge = document.getElementById('engineUptimeBadge');
+  const btnAutoStream = document.getElementById('btnAutoStream');
+  const autoStreamLabel = document.getElementById('autoStreamLabel');
+
+  let autoStreamInterval = null;
+  const sampleEndpoints = [
+    '/api/v2/metrics/code-health',
+    '/api/v2/metrics/complexity',
+    '/api/v2/metrics/churn',
+    '/api/v2/metrics/dependencies'
+  ];
+  let sampleEpIndex = 0;
+
+  async function checkLiveEngine() {
+    try {
+      const res = await fetch('/health');
+      if (res.ok) {
+        const data = await res.json();
+        if (engineStatusBadge) engineStatusBadge.textContent = 'ENGINE CONNECTED';
+        if (engineUptimeBadge) engineUptimeBadge.textContent = `${data.uptimeSeconds}s`;
+      }
+    } catch {
+      if (engineStatusBadge) engineStatusBadge.textContent = 'CONNECTING...';
+    }
+  }
+
+  // Periodic heartbeat every 4 seconds
+  checkLiveEngine();
+  setInterval(checkLiveEngine, 4000);
+
+  if (btnAutoStream) {
+    btnAutoStream.addEventListener('click', () => {
+      if (autoStreamInterval) {
+        // Stop stream
+        clearInterval(autoStreamInterval);
+        autoStreamInterval = null;
+        btnAutoStream.classList.remove('active');
+        btnAutoStream.querySelector('.auto-stream-icon').textContent = '▶';
+        autoStreamLabel.textContent = 'Start Live Stream';
+      } else {
+        // Start live stream
+        btnAutoStream.classList.add('active');
+        btnAutoStream.querySelector('.auto-stream-icon').textContent = '⏹';
+        autoStreamLabel.textContent = 'Live Streaming...';
+        
+        // Execute first call immediately
+        dispatchRequest();
+
+        // Cycle through calls every 2.5 seconds
+        autoStreamInterval = setInterval(() => {
+          sampleEpIndex = (sampleEpIndex + 1) % sampleEndpoints.length;
+          targetUrlInput.value = sampleEndpoints[sampleEpIndex];
+          updateSnippet();
+          dispatchRequest();
+        }, 2500);
+      }
+    });
+  }
+
   // Initial load request
   const termCmd = document.querySelector('.term-command');
   if (termCmd) {

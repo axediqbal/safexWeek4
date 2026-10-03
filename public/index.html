@@ -194,9 +194,34 @@
 
     <!-- Studio Workbench / Playground Section -->
     <section id="playground" class="studio-section">
-      <div class="section-badge">INTERACTIVE WORKBENCH</div>
-      <h2 class="section-title">Live API Console &amp; Rate Limit Telemetry</h2>
-      <p class="section-subtitle">Send real-time HTTP requests, inspect headers, or simulate traffic surges to see the rate limiter in action.</p>
+      <div class="section-badge">INTERACTIVE WORKBENCH • REAL-TIME TELEMETRY</div>
+      <h2 class="section-title live-heading-container">
+        <span class="live-radar-badge">
+          <span class="radar-ping"></span>
+          <span class="radar-core"></span>
+          LIVE
+        </span>
+        Live API Console &amp; Rate Limit Telemetry
+      </h2>
+      <p class="section-subtitle">Send real-time HTTP requests, inspect headers, or run the automated live traffic pulse to see the sliding-window engine in action.</p>
+
+      <!-- Live Heartbeat & Streaming Control Bar -->
+      <div class="live-stream-bar">
+        <div class="stream-info">
+          <span class="stream-pulse-dot"></span>
+          <span class="stream-status" id="engineStatusBadge">ENGINE CONNECTED</span>
+          <span class="stream-divider">•</span>
+          <span class="stream-uptime">UPTIME: <b id="engineUptimeBadge">0s</b></span>
+          <span class="stream-divider">•</span>
+          <span class="stream-rate">LIMITER: <b>SLIDING WINDOW COUNTER (O(1))</b></span>
+        </div>
+        <div class="stream-controls">
+          <button id="btnAutoStream" class="btn-auto-stream" title="Toggle automatic real-time traffic pulse">
+            <span class="auto-stream-icon">▶</span>
+            <span id="autoStreamLabel">Start Live Stream</span>
+          </button>
+        </div>
+      </div>
 
       <!-- Live Telemetry Ribbon -->
       <div class="telemetry-ribbon">
