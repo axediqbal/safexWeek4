@@ -257,7 +257,9 @@ export default function App() {
           </div>
           <div>
             <div className="brand-name">
-              DevPulse <span className="brand-tag">v2.0</span>
+              Dev<span className="pulse-live-text">Pulse</span>
+              <span className="brand-live-dot" title="Live Engine Active"></span>
+              <span className="brand-tag">v2.0</span>
             </div>
           </div>
         </div>

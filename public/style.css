@@ -195,6 +195,16 @@ body {
   justify-content: center;
   color: #fff;
   box-shadow: 0 2px 10px var(--accent-glow);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  animation: brandGlowHeartbeat 4s ease-in-out infinite;
+}
+.brand-group:hover .brand-symbol {
+  transform: rotate(-6deg) scale(1.08);
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+@keyframes brandGlowHeartbeat {
+  0%, 100% { box-shadow: 0 2px 10px var(--accent-glow); }
+  50% { box-shadow: 0 4px 18px rgba(99, 102, 241, 0.35); }
 }
 .brand-meta {
   display: flex;
@@ -202,9 +212,49 @@ body {
   gap: 0.45rem;
 }
 .brand-title {
-  font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: -0.4px;
+  font-weight: 850;
+  font-size: 1.15rem;
+  letter-spacing: -0.5px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-primary);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.brand-group:hover .brand-title {
+  transform: translateX(1px);
+}
+.pulse-live-text {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 35%, #7c3aed 70%, #06b6d4 100%);
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: brandPulseShimmer 4s ease-in-out infinite;
+  display: inline-block;
+  font-weight: 900;
+  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.25));
+  transition: filter 0.25s ease;
+}
+.brand-group:hover .pulse-live-text {
+  filter: drop-shadow(0 0 14px rgba(99, 102, 241, 0.5));
+}
+.brand-live-dot {
+  width: 6px;
+  height: 6px;
+  background: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 3px;
+  box-shadow: 0 0 8px #10b981;
+  animation: brandDotPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes brandPulseShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes brandDotPulse {
+  0%, 100% { transform: scale(0.85); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px #10b981; }
 }
 .brand-version {
   font-size: 0.675rem;
@@ -214,6 +264,11 @@ body {
   color: var(--primary-accent);
   padding: 2px 7px;
   border-radius: 999px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.brand-group:hover .brand-version {
+  transform: translateY(-1px);
+  border-color: var(--primary-accent);
 }
 
 .nav-center {
