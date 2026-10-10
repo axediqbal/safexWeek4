@@ -103,19 +103,49 @@ app.get('/openapi.yaml', (req, res) => {
   res.type('text/yaml').sendFile(openApiYamlPath);
 });
 
-// Swagger UI Options with High-Contrast Dark Theme
-const swaggerOptions = {
-  customCss: swaggerDarkCss,
-  customSiteTitle: 'DevPulse Code Intelligence API — Interactive Docs',
-  swaggerOptions: {
-    persistAuthorization: true,
-    displayRequestDuration: true
-  }
-};
+// Self-contained Swagger UI HTML with CDN Assets (guarantees 100% reliability on Vercel Serverless & Local)
+const swaggerHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevPulse Code Intelligence API — Interactive Docs</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    ${swaggerDarkCss}
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-standalone-preset.min.js"></script>
+  <script>
+    window.onload = function() {
+      window.ui = SwaggerUIBundle({
+        spec: ${JSON.stringify(openApiSpec)},
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout",
+        persistAuthorization: true,
+        displayRequestDuration: true
+      });
+    };
+  </script>
+</body>
+</html>`;
 
-// Mount Interactive Swagger UI at /docs and /api-docs
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, swaggerOptions));
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, swaggerOptions));
+// Mount Interactive Swagger UI at /docs and /api-docs (CDN-powered for Vercel & Cloud)
+app.get(['/docs', '/docs/*', '/api-docs', '/api-docs/*'], (req, res) => {
+  res.type('html').send(swaggerHtml);
+});
 
 // Version 2 Routes (Latest Production - Active)
 app.use(
