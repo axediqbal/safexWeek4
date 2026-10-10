@@ -24,7 +24,7 @@ Open your terminal in the project directory and run:
 
 ```bash
 # 1. Initialize remote (replace with your GitHub repository URL)
-git remote add origin https://github.com/<your-username>/devpulse-public-api.git
+git remote add origin https://github.com/axediqbal/safexWeek4.git
 
 # 2. Push all code to GitHub
 git branch -M main
@@ -88,7 +88,7 @@ Built with Node.js, Express, React, Vite, and OpenAPI 3.0, DevPulse delivers dev
 
 🔗 Live WebApp & API: https://<your-app>.onrender.com/
 📖 Interactive API Docs: https://<your-app>.onrender.com/docs
-💻 GitHub Repository: https://github.com/<your-username>/devpulse-public-api
+💻 GitHub Repository: https://github.com/axediqbal/safexWeek4
 
 #softwareengineering #api #nodejs #reactjs #webdevelopment #backend #fullstack #systemdesign #developers
 ```
