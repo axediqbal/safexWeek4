@@ -1,7 +1,22 @@
 {
-  "version": 2,
-  "buildCommand": "npm run build",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "devpulse-code-intelligence-api": {
+      "root": ".",
+      "framework": "express",
+      "buildCommand": "npm run build"
+    },
+    "client": {
+      "root": "client",
+      "framework": "vite"
+    }
+  },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index.js" }
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "devpulse-code-intelligence-api"
+      }
+    }
   ]
 }
